@@ -1,206 +1,145 @@
 ---
+import "leaflet/dist/leaflet.css";
 import Layout from "../layouts/Layout.astro";
+import populationMain from "../assets/populationMain.json";
+
+const listePeriode = [
+  ...new Set(populationMain?.map((d) => d.Période)),
+].reverse();
+const listeSex = [...new Set(populationMain?.map((d) => d.Sexe))];
+const listeAge = [...new Set(populationMain?.map((d) => d.Âge))];
 ---
 
-<Layout title="Données de population" currentPage="population">
-  <div class="page-container">
-    <header class="page-header">
-      <h1>Données de population</h1>
-      <p>
-        Visualisation des données démographiques et statistiques de population.
-      </p>
-    </header>
+<Layout title="Population" currentPage="population">
+  <div class="max-w-6xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6">Visualisation de la population</h1>
 
-    <section class="content-section">
-      <h2>Graphiques de population</h2>
-      <div class="placeholder-content">
-        <div class="placeholder-chart">
-          <p>📊 Graphique de population par région</p>
-          <p class="placeholder-text">
-            Ici sera affiché un graphique interactif des données de population.
-          </p>
-        </div>
-
-        <div class="placeholder-chart">
-          <p>📈 Évolution démographique</p>
-          <p class="placeholder-text">
-            Ici sera affiché l'évolution de la population dans le temps.
-          </p>
-        </div>
+    <div class="flex gap-4 mb-6">
+      <div>
+        <label for="periode" class="block mb-2 font-medium">Année</label>
+        <select id="periode" class="border rounded p-2">
+          {
+            listePeriode.map((p, i) => (
+              <option value={p} selected={i === 0}>
+                {p}
+              </option>
+            ))
+          }
+        </select>
       </div>
-    </section>
 
-    <section class="info-section" aria-labelledby="info-titre">
-      <h2 id="info-titre">Informations sur les données</h2>
-      <div class="info-content">
-        <p>
-          Les données de population seront intégrées prochainement. Cette page
-          servira à visualiser :
-        </p>
-        <ul>
-          <li>Répartition de la population par région</li>
-          <li>Évolution démographique dans le temps</li>
-          <li>Densité de population</li>
-          <li>Pyramides des âges</li>
-        </ul>
+      <div>
+        <label for="sex" class="block mb-2 font-medium text-black">Sexe</label>
+        <select id="sex" class="border rounded p-2">
+          {
+            listeSex.map((s, i) => (
+              <option value={s} selected={i === 0}>
+                {s}
+              </option>
+            ))
+          }
+        </select>
       </div>
-    </section>
+
+      <div>
+        <label for="age" class="block mb-2 font-medium">Âge</label>
+        <select id="age" class="border rounded p-2">
+          {
+            listeAge.map((a, i) => (
+              <option value={a} selected={i === 0}>
+                {a}
+              </option>
+            ))
+          }
+        </select>
+      </div>
+    </div>
+    <div id="map" class="border rounded-lg" style="height: 600px;"></div>
+
+    <div id="results" class="mt-4 p-4 bg-gray-50 rounded">
+      Sélectionnez les filtres pour voir les données.
+    </div>
   </div>
 </Layout>
 
-<style>
-  .page-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
+<script>
+  import L from "leaflet";
+  import populationMain from "../assets/populationMain.json";
 
-  .page-header {
-    text-align: center;
-    margin-bottom: 3rem;
-  }
+  const elmYear = document.getElementById("periode") as HTMLSelectElement;
+  const elmSex = document.getElementById("sex") as HTMLSelectElement;
+  const elmAge = document.getElementById("age") as HTMLSelectElement;
+  const results = document.getElementById("results");
 
-  .page-header h1 {
-    color: #2c3e50;
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-  }
+  let selectedYear = Number(elmYear.value);
+  let selectedSex = elmSex.value;
+  let selectedAge = elmAge.value;
 
-  .page-header p {
-    color: #7f8c8d;
-    font-size: 1.2rem;
-    max-width: 600px;
-    margin: 0 auto;
-  }
+  const map = L.map("map").setView([46.6033, 1.883], 6);
 
-  .content-section {
-    margin-bottom: 3rem;
-  }
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors",
+  }).addTo(map);
 
-  .content-section h2 {
-    color: #34495e;
-    font-size: 2rem;
-    margin-bottom: 2rem;
-    border-bottom: 3px solid #3498db;
-    padding-bottom: 0.5rem;
-  }
+  let markers = [];
 
-  .placeholder-content {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 2rem;
-    margin-bottom: 2rem;
-  }
+  function updateMap() {
 
-  .placeholder-chart {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border: 2px dashed #6c757d;
-    border-radius: 12px;
-    padding: 3rem 2rem;
-    text-align: center;
-    transition: all 0.3s ease;
-  }
+    markers.forEach((marker) => map.removeLayer(marker));
+    markers = [];
+    const filteredData = populationMain.filter(
+      (d) =>
+        d.Période === selectedYear &&
+        d.Sexe === selectedSex &&
+        d.Âge === selectedAge
+    );
 
-  .placeholder-chart:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    border-color: #3498db;
-  }
+    filteredData.forEach((data, index) => {
+      const lat = 46.6033 + (Math.random() - 0.5) * 10;
+      const lon = 1.883 + (Math.random() - 0.5) * 10;
 
-  .placeholder-chart p:first-child {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 1rem;
-  }
+      const marker = L.circleMarker([lat, lon], {
+        radius: Math.sqrt(data.Valeur / 1000) + 3,
+        fillColor: "#3B82F6",
+        color: "#1E40AF",
+        weight: 2,
+        opacity: 0.8,
+        fillOpacity: 0.6,
+      }).addTo(map);
 
-  .placeholder-text {
-    color: #6c757d;
-    font-style: italic;
-    line-height: 1.6;
-  }
+      marker.bindPopup(`
+        <b>${data.Géographie}</b><br>
+        Population: ${data.Valeur.toLocaleString()}<br>
+        Année: ${selectedYear}<br>
+        Sexe: ${selectedSex}<br>
+        Âge: ${selectedAge}
+      `);
 
-  .info-section {
-    background-color: #f8f9fa;
-    border-radius: 12px;
-    padding: 2rem;
-    border-left: 4px solid #3498db;
-  }
+      markers.push(marker);
+    });
 
-  .info-section h2 {
-    color: #2c3e50;
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    border: none;
-    padding: 0;
-  }
-
-  .info-content {
-    color: #495057;
-  }
-
-  .info-content ul {
-    margin: 1rem 0;
-    padding-left: 1.5rem;
-  }
-
-  .info-content li {
-    margin-bottom: 0.5rem;
-    position: relative;
-  }
-
-  .info-content li::marker {
-    color: #3498db;
-  }
-
-  /* Responsive */
-  @media (max-width: 768px) {
-    .page-container {
-      padding: 1rem;
-    }
-
-    .page-header h1 {
-      font-size: 2rem;
-    }
-
-    .page-header p {
-      font-size: 1rem;
-    }
-
-    .placeholder-content {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-
-    .placeholder-chart {
-      padding: 2rem 1rem;
-    }
-
-    .content-section h2 {
-      font-size: 1.5rem;
+    if (results) {
+      results.innerHTML = `
+        <h3 class="font-bold mb-2">Données sélectionnées</h3>
+        <p>Année: ${selectedYear} | Sexe: ${selectedSex} | Âge: ${selectedAge}</p>
+        <p>Données trouvées: ${filteredData.length} enregistrement(s)</p>
+      `;
     }
   }
+  elmYear.addEventListener("change", (e) => {
+    selectedYear = Number(e.target.value);
+    updateMap();
+  });
 
-  /* Accessibilité */
-  @media (prefers-reduced-motion: reduce) {
-    .placeholder-chart {
-      transition: none;
-    }
+  elmSex.addEventListener("change", (e) => {
+    selectedSex = e.target.value;
+    updateMap();
+  });
 
-    .placeholder-chart:hover {
-      transform: none;
-    }
-  }
+  elmAge.addEventListener("change", (e) => {
+    selectedAge = e.target.value;
+    updateMap();
+  });
 
-  @media (prefers-contrast: high) {
-    .placeholder-chart {
-      border-width: 3px;
-      background: #fff;
-    }
-
-    .info-section {
-      background-color: #fff;
-      border-width: 3px;
-    }
-  }
-</style>
+  updateMap();
+</script>

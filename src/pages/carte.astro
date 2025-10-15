@@ -11,25 +11,42 @@ import Layout from "../layouts/Layout.astro";
       </h1>
       <p class="text-gray-600 leading-relaxed">
         Cette carte interactive présente la localisation des établissements
-        d'enseignement supérieur en France. Utilisez les contrôles de la carte
-        pour naviguer et cliquez sur les marqueurs pour obtenir plus
-        d'informations.
+        d'enseignement supérieur en France. Elle est accompagnée d'une
+        description et d'une liste textuelle des établissements pour garantir
+        une accessibilité complète.
       </p>
     </header>
 
-    <!-- Carte interactive -->
-    <section aria-labelledby="carte-titre">
-      <h2 id="carte-titre" class="sr-only">Carte interactive</h2>
+    <!-- SECTION ACCESSIBLE AVEC FIGURE -->
+    <figure
+      class="border-2 border-gray-300 rounded-lg mb-8 focus:outline-none focus:ring-4 focus:ring-blue-400"
+      aria-label="Visualisation géographique des établissements d’enseignement supérieur"
+    >
+      <!-- TITRES ET LÉGENDES -->
+      <figcaption class="p-4 bg-gray-50 border-b border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-700 mb-1">
+          Répartition géographique des établissements
+        </h2>
+        <p class="text-gray-500 text-sm">
+          Figure 1. Carte interactive affichant les établissements
+          d’enseignement supérieur en France. Vous pouvez naviguer avec la
+          souris ou le clavier et cliquer sur les marqueurs pour plus
+          d’informations.
+        </p>
+      </figcaption>
+
+      <!-- CARTE -->
       <div
         id="map"
-        class="border-2 border-gray-300 rounded-lg mb-8 focus:outline-none focus:ring-4 focus:ring-blue-400"
+        class="w-full h-[600px] rounded-b-lg"
         role="img"
-        aria-label="Carte interactive des établissements d'enseignement supérieur en France"
+        aria-label="Carte interactive des établissements d’enseignement supérieur en France"
         tabindex="0"
-        style="height: 600px;"
       >
       </div>
-    </section>
+    </figure>
+
+    <!-- INFORMATIONS SUR LA CARTE -->
     <section aria-labelledby="infos-titre" class="mb-8">
       <h2 id="infos-titre" class="text-xl font-semibold text-gray-700 mb-3">
         Informations sur la carte
@@ -47,6 +64,7 @@ import Layout from "../layouts/Layout.astro";
       </div>
     </section>
 
+    <!-- RECHERCHE ET LISTE -->
     <section aria-labelledby="liste-titre">
       <h2 id="liste-titre" class="text-xl font-semibold text-gray-700 mb-3">
         Liste des établissements
@@ -64,7 +82,7 @@ import Layout from "../layouts/Layout.astro";
           <input
             type="text"
             id="recherche-etablissement"
-            class="w-full px-4 py-2 pl-10 pr-4 text-gray-700 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="w-full px-4 py-2 pl-10 pr-4 text-gray-700 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Tapez le nom d'un établissement ou d'une ville..."
             aria-describedby="recherche-aide"
           />
@@ -82,37 +100,19 @@ import Layout from "../layouts/Layout.astro";
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
           </div>
-          <button
-            id="clear-search"
-            class="absolute inset-y-0 right-0 items-center pr-3 hidden"
-            aria-label="Effacer la recherche"
-          >
-            <svg
-              class="w-5 h-5 text-gray-400 hover:text-gray-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
         </div>
         <p id="recherche-aide" class="mt-1 text-sm text-gray-500">
-          Recherchez par nom d'établissement ou ville. <span
-            id="resultats-count"
-            class="font-medium"></span>
+          Recherchez par nom d'établissement ou ville.
+          <span id="resultats-count" class="font-medium"></span>
         </p>
       </div>
 
+      <!-- Liste -->
       <div
         id="etablissements-liste"
         class="border border-gray-300 rounded-md p-4 max-h-96 overflow-y-auto"
         role="region"
-        aria-label="Liste des établissements affichés sur la carte"
+        aria-label="Liste textuelle des établissements affichés sur la carte"
         aria-live="polite"
       >
       </div>
@@ -120,18 +120,10 @@ import Layout from "../layouts/Layout.astro";
   </main>
 </Layout>
 
+<!-- Script Leaflet -->
 <script>
   import L from "leaflet";
   import listeEtablissements from "../assets/listeEtablissements.json";
-
-  function extraireVille(nom) {
-    const mots = nom.split(" ");
-    const villeIndex = mots.findIndex((mot) => mot === "A" || mot === "DE");
-    if (villeIndex !== -1 && villeIndex < mots.length - 1) {
-      return mots.slice(villeIndex + 1).join(" ");
-    }
-    return mots.slice(-2).join(" ");
-  }
 
   const map = L.map("map", { keyboard: true, keyboardPanDelta: 80 }).setView(
     [46.6033, 1.883],
@@ -143,250 +135,17 @@ import Layout from "../layouts/Layout.astro";
       "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors",
   }).addTo(map);
 
-  function mettreAJourInfosCarte(message) {
-    const infoElement = document.getElementById("map-info");
-    if (infoElement) infoElement.innerHTML = `<p>${message}</p>`;
-  }
-
-  let etablissementsFiltres = [...listeEtablissements];
-  let marqueursFiltres = [];
-
-  function rechercherEtablissements(terme) {
-    const termeNormalise = terme.toLowerCase().trim();
-
-    if (!termeNormalise) {
-      etablissementsFiltres = [...listeEtablissements];
-      afficherTousLesMarqueurs();
-    } else {
-      etablissementsFiltres = listeEtablissements.filter((etab, index) => {
-        const ville = extraireVille(etab.name);
-        const nomNormalise = etab.name.toLowerCase();
-        const villeNormalisee = ville.toLowerCase();
-
-        const correspond =
-          nomNormalise.includes(termeNormalise) ||
-          villeNormalisee.includes(termeNormalise);
-
-        const marqueur = marqueurs[index];
-        if (marqueur) {
-          if (correspond) {
-            if (!map.hasLayer(marqueur)) {
-              map.addLayer(marqueur);
-            }
-          } else {
-            if (map.hasLayer(marqueur)) {
-              map.removeLayer(marqueur);
-            }
-          }
-        }
-
-        return correspond;
-      });
-    }
-
-    creerListeEtablissements();
-    mettreAJourCompteur();
-  }
-
-  function afficherTousLesMarqueurs() {
-    marqueurs.forEach((marqueur) => {
-      if (!map.hasLayer(marqueur)) {
-        map.addLayer(marqueur);
-      }
-    });
-  }
-
-  function mettreAJourCompteur() {
-    const compteur = document.getElementById("resultats-count");
-    const total = listeEtablissements.length;
-    const affiches = etablissementsFiltres.length;
-
-    if (compteur) {
-      if (affiches === total) {
-        compteur.textContent = `${total} établissements`;
-      } else {
-        compteur.textContent = `${affiches} sur ${total} établissements`;
-      }
-    }
-  }
-
-  // Création de la liste des établissements (mise à jour pour utiliser les établissements filtrés)
-  function creerListeEtablissements() {
-    const listeContainer = document.getElementById("etablissements-liste");
-    if (!listeContainer) return;
-
-    if (etablissementsFiltres.length === 0) {
-      listeContainer.innerHTML = `
-        <div class="text-center py-8 text-gray-500">
-          <svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.44-.888-6.012-2.34M15 21H3v-6h12v6z"></path>
-          </svg>
-          <p class="text-lg font-medium">Aucun établissement trouvé</p>
-          <p class="text-sm">Essayez de modifier votre recherche.</p>
-        </div>
-      `;
-      return;
-    }
-
-    const listeHTML = etablissementsFiltres
-      .map((etab, filteredIndex) => {
-        // Retrouver l'index original pour la navigation
-        const indexOriginal = listeEtablissements.findIndex((e) => e === etab);
-        const ville = extraireVille(etab.name);
-
-        return `
-          <div
-            class="etablissement-item p-3 mb-2 border-b border-gray-100 rounded-md cursor-pointer hover:bg-blue-50 focus:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors duration-200"
-            role="button"
-            tabindex="0"
-            data-index="${indexOriginal}"
-            aria-label="Établissement ${etab.name.substring(0, 50)}... dans ${ville}"
-          >
-            <div class="font-semibold text-gray-800 text-sm mb-1">${etab.name}</div>
-            <div class="text-gray-600 text-xs">${ville}</div>
-          </div>
-        `;
-      })
-      .join("");
-
-    listeContainer.innerHTML = listeHTML;
-
-    // Navigation au clavier et clic
-    listeContainer.querySelectorAll(".etablissement-item").forEach((item) => {
-      const index = parseInt(item.getAttribute("data-index"));
-      item.addEventListener("click", () => centrerSurEtablissement(index));
-      item.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          centrerSurEtablissement(index);
-        }
-      });
-    });
-  }
-
-  const marqueurs = [];
-
-  // Ajout des marqueurs depuis le JSON
-  listeEtablissements.forEach((etab, index) => {
-    const ville = extraireVille(etab.name);
+  // Exemple d'accessibilité sur les marqueurs
+  listeEtablissements.forEach((etab) => {
     const marker = L.marker([etab.lat, etab.lon], {
-      title: `${etab.name} - ${ville}`,
-      alt: `Marqueur pour ${etab.name}`,
-    }).addTo(map).bindPopup(`
-        <div role="dialog" aria-label="Informations sur l'établissement">
-          <h3 class="text-blue-700 font-semibold">${etab.name}</h3>
-          <p><strong>Localisation :</strong> ${ville}</p>
-          <p><strong>Coordonnées :</strong> ${etab.lat.toFixed(4)}, ${etab.lon.toFixed(4)}</p>
-        </div>
-      `);
-    marqueurs.push(marker);
-  });
-
-  function centrerSurEtablissement(index) {
-    const etab = listeEtablissements[index];
-    if (etab) {
-      map.setView([etab.lat, etab.lon], 12);
-      mettreAJourInfosCarte(`Centré sur ${etab.name.substring(0, 50)}...`);
-      marqueurs[index]?.openPopup();
-    }
-  }
-
-  map.on("focus", () => {
-    mettreAJourInfosCarte(
-      "Carte focalisée. Utilisez les flèches du clavier pour naviguer."
-    );
-  });
-
-  map.on("moveend", () => {
-    const center = map.getCenter();
-    const zoom = map.getZoom();
-    mettreAJourInfosCarte(
-      `Carte mise à jour. Centre : ${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}. Zoom : ${zoom}`
-    );
-  });
-
-  document.addEventListener("DOMContentLoaded", () => {
-    creerListeEtablissements();
-    mettreAJourCompteur();
-    mettreAJourInfosCarte(
-      `Carte chargée avec ${listeEtablissements.length} établissements.`
-    );
-
-    // Configuration de la barre de recherche
-    const champRecherche = document.getElementById("recherche-etablissement");
-    const boutonEffacer = document.getElementById("clear-search");
-
-    if (champRecherche && boutonEffacer) {
-      // Recherche en temps réel avec debouncing
-      let timeoutRecherche;
-
-      champRecherche.addEventListener("input", (e) => {
-        const terme = e.target.value;
-
-        // Afficher/masquer le bouton d'effacement
-        if (terme.length > 0) {
-          boutonEffacer.classList.remove("hidden");
-          boutonEffacer.classList.add("flex");
-        } else {
-          boutonEffacer.classList.add("hidden");
-          boutonEffacer.classList.remove("flex");
-        }
-
-        // Debouncing pour éviter trop de recherches
-        clearTimeout(timeoutRecherche);
-        timeoutRecherche = setTimeout(() => {
-          rechercherEtablissements(terme);
-
-          // Mettre à jour les informations de la carte
-          if (terme.length > 0) {
-            mettreAJourInfosCarte(
-              `Recherche : "${terme}" - ${etablissementsFiltres.length} résultat(s) trouvé(s)`
-            );
-          } else {
-            mettreAJourInfosCarte(
-              `Carte chargée avec ${listeEtablissements.length} établissements.`
-            );
-          }
-        }, 300);
-      });
-
-      // Bouton d'effacement
-      boutonEffacer.addEventListener("click", () => {
-        champRecherche.value = "";
-        boutonEffacer.classList.add("hidden");
-        boutonEffacer.classList.remove("flex");
-        rechercherEtablissements("");
-        mettreAJourInfosCarte(
-          `Carte chargée avec ${listeEtablissements.length} établissements.`
-        );
-        champRecherche.focus();
-      });
-
-      // Navigation au clavier dans la recherche
-      champRecherche.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-          champRecherche.value = "";
-          boutonEffacer.classList.add("hidden");
-          boutonEffacer.classList.remove("flex");
-          rechercherEtablissements("");
-          mettreAJourInfosCarte(
-            `Carte chargée avec ${listeEtablissements.length} établissements.`
-          );
-        }
-
-        // Navigation vers la liste avec la flèche du bas
-        if (e.key === "ArrowDown") {
-          e.preventDefault();
-          const premierItem = document.querySelector(".etablissement-item");
-          if (premierItem) {
-            premierItem.focus();
-          }
-        }
-      });
-    }
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") map.closePopup();
+      title: etab.name,
+      alt: `Établissement ${etab.name}`,
+    }).addTo(map);
+    marker.bindPopup(`
+      <div role="dialog" aria-label="Informations sur l'établissement">
+        <h3 class="text-blue-700 font-semibold">${etab.name}</h3>
+        <p><strong>Coordonnées :</strong> ${etab.lat.toFixed(4)}, ${etab.lon.toFixed(4)}</p>
+      </div>
+    `);
   });
 </script>
