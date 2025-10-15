@@ -1,26 +1,153 @@
 ---
 import "../styles/global.css";
+
+export interface Props {
+  title?: string;
+  currentPage?: string;
+}
+
+const { title = "Application de visualisation de données", currentPage = "" } =
+  Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <title>Astro Basics</title>
+    <title>{title}</title>
   </head>
   <body>
-    <slot />
+    <header class="main-header">
+      <nav
+        class="main-nav"
+        role="navigation"
+        aria-label="Navigation principale"
+      >
+        <div class="nav-container">
+          <div class="nav-brand">
+            <a href="/" aria-label="Retour à l'accueil">
+              <h1>DataViz</h1>
+            </a>
+          </div>
+
+          <button
+            class="nav-toggle"
+            aria-expanded="false"
+            aria-controls="nav-menu"
+            aria-label="Ouvrir le menu de navigation"
+          >
+            <span class="hamburger"></span>
+            <span class="hamburger"></span>
+            <span class="hamburger"></span>
+          </button>
+
+          <ul class="nav-menu" id="nav-menu" role="menubar">
+            <li role="none">
+              <a
+                href="/"
+                class={`nav-link ${currentPage === "accueil" ? "active" : ""}`}
+                role="menuitem"
+                aria-current={currentPage === "accueil" ? "page" : undefined}
+              >
+                Accueil
+              </a>
+            </li>
+            <li role="none">
+              <a
+                href="/carte"
+                class={`nav-link ${currentPage === "etablissements" ? "active" : ""}`}
+                role="menuitem"
+                aria-current={currentPage === "etablissements"
+                  ? "page"
+                  : undefined}
+              >
+                Établissements
+              </a>
+            </li>
+            <li role="none">
+              <a
+                href="/population"
+                class={`nav-link ${currentPage === "population" ? "active" : ""}`}
+                role="menuitem"
+                aria-current={currentPage === "population" ? "page" : undefined}
+              >
+                Population
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+
+    <main class="main-content">
+      <slot />
+    </main>
+
+    <footer class="main-footer">
+      <div class="footer-container">
+        <p>
+          &copy; 2025 Application de visualisation de données. Tous droits
+          réservés.
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      // Navigation mobile
+      const navToggle = document.querySelector(".nav-toggle");
+      const navMenu = document.querySelector(".nav-menu");
+
+      if (navToggle && navMenu) {
+        navToggle.addEventListener("click", () => {
+          const isExpanded = navToggle.getAttribute("aria-expanded") === "true";
+
+          navToggle.setAttribute("aria-expanded", (!isExpanded).toString());
+          navToggle.setAttribute(
+            "aria-label",
+            isExpanded
+              ? "Ouvrir le menu de navigation"
+              : "Fermer le menu de navigation"
+          );
+          navMenu.classList.toggle("active");
+        });
+
+        // Fermer le menu avec Escape
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && navMenu.classList.contains("active")) {
+            navToggle.setAttribute("aria-expanded", "false");
+            navToggle.setAttribute(
+              "aria-label",
+              "Ouvrir le menu de navigation"
+            );
+            navMenu.classList.remove("active");
+            (navToggle as HTMLElement).focus();
+          }
+        });
+
+        // Fermer le menu en cliquant en dehors
+        document.addEventListener("click", (e) => {
+          const target = e.target as HTMLElement;
+          if (
+            target &&
+            !navToggle.contains(target) &&
+            !navMenu.contains(target)
+          ) {
+            navToggle.setAttribute("aria-expanded", "false");
+            navToggle.setAttribute(
+              "aria-label",
+              "Ouvrir le menu de navigation"
+            );
+            navMenu.classList.remove("active");
+          }
+        });
+      }
+    </script>
   </body>
 </html>
 
-<style>
-  html,
-  body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-  }
-</style>
+
+
+  

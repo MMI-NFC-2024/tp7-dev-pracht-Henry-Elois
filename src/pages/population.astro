@@ -1,0 +1,206 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Données de population" currentPage="population">
+  <div class="page-container">
+    <header class="page-header">
+      <h1>Données de population</h1>
+      <p>
+        Visualisation des données démographiques et statistiques de population.
+      </p>
+    </header>
+
+    <section class="content-section">
+      <h2>Graphiques de population</h2>
+      <div class="placeholder-content">
+        <div class="placeholder-chart">
+          <p>📊 Graphique de population par région</p>
+          <p class="placeholder-text">
+            Ici sera affiché un graphique interactif des données de population.
+          </p>
+        </div>
+
+        <div class="placeholder-chart">
+          <p>📈 Évolution démographique</p>
+          <p class="placeholder-text">
+            Ici sera affiché l'évolution de la population dans le temps.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="info-section" aria-labelledby="info-titre">
+      <h2 id="info-titre">Informations sur les données</h2>
+      <div class="info-content">
+        <p>
+          Les données de population seront intégrées prochainement. Cette page
+          servira à visualiser :
+        </p>
+        <ul>
+          <li>Répartition de la population par région</li>
+          <li>Évolution démographique dans le temps</li>
+          <li>Densité de population</li>
+          <li>Pyramides des âges</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .page-header h1 {
+    color: #2c3e50;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .page-header p {
+    color: #7f8c8d;
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .content-section {
+    margin-bottom: 3rem;
+  }
+
+  .content-section h2 {
+    color: #34495e;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    border-bottom: 3px solid #3498db;
+    padding-bottom: 0.5rem;
+  }
+
+  .placeholder-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .placeholder-chart {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px dashed #6c757d;
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .placeholder-chart:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: #3498db;
+  }
+
+  .placeholder-chart p:first-child {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+  }
+
+  .placeholder-text {
+    color: #6c757d;
+    font-style: italic;
+    line-height: 1.6;
+  }
+
+  .info-section {
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    padding: 2rem;
+    border-left: 4px solid #3498db;
+  }
+
+  .info-section h2 {
+    color: #2c3e50;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    border: none;
+    padding: 0;
+  }
+
+  .info-content {
+    color: #495057;
+  }
+
+  .info-content ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+  }
+
+  .info-content li {
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+
+  .info-content li::marker {
+    color: #3498db;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .page-container {
+      padding: 1rem;
+    }
+
+    .page-header h1 {
+      font-size: 2rem;
+    }
+
+    .page-header p {
+      font-size: 1rem;
+    }
+
+    .placeholder-content {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .placeholder-chart {
+      padding: 2rem 1rem;
+    }
+
+    .content-section h2 {
+      font-size: 1.5rem;
+    }
+  }
+
+  /* Accessibilité */
+  @media (prefers-reduced-motion: reduce) {
+    .placeholder-chart {
+      transition: none;
+    }
+
+    .placeholder-chart:hover {
+      transform: none;
+    }
+  }
+
+  @media (prefers-contrast: high) {
+    .placeholder-chart {
+      border-width: 3px;
+      background: #fff;
+    }
+
+    .info-section {
+      background-color: #fff;
+      border-width: 3px;
+    }
+  }
+</style>
