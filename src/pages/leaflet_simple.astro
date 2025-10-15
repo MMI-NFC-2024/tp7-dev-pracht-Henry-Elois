@@ -1,8 +1,9 @@
 ---
 // Import des styles CSS de Leaflet pour l'affichage de la carte
 import "leaflet/dist/leaflet.css";
+import Layout from "../layouts/Layout.astro";
 ---
-
+<Layout title="Leaflet simple" currentPage="leaflet_simple">
 <div id="map" style="height: 600px;"></div>
 <script>
   import listeEtablissements from "../assets/listeEtablissements.json";
@@ -32,3 +33,4 @@ import "leaflet/dist/leaflet.css";
     }
   });
 </script>
+</Layout>
